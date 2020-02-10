@@ -1,2 +1,3 @@
-# Sacramento_Home_Prices_Workflow
+# Sacramento Home Prices Predictor
 A project to practice data science workflow concepts using Sacramento, CA home prices data. 
+- Author: Lesley Miller
