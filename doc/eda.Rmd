@@ -2,7 +2,10 @@
 title: "EDA of Sacramento House Prices"
 author: "Lesley Miller"
 date: "2/8/2020"
-output: github_document
+output: 
+   github_document:
+      toc: true
+bibliography: citations.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +16,9 @@ knitr::opts_knit$set(root.dir = here::here())
 ```{r load libraries}
 # load packages
 suppressPackageStartupMessages(library(tidyverse))
+library(knitr)
+library(patchwork)
+library(formatR)
 ```
 
 
@@ -45,39 +51,141 @@ print(paste("The number of predictors is:", num_features))
 |latitude| continuous | The latitude geospatial location of the house.|
 |longitude| continuous | The longitude geospatial location of the house.|
 
-## Distributions of Categorical Predictors 
-```{r}
+## Distribution of Categorical Predictors 
+
+> The most common number of bedrooms for a house is 3 with the second most common number being 4 bedrooms. Just under 100 homes of the 521 in the training set contain 2 bedrooms and very few homes contain 1, 5 or 6 bedrooms. 
+
+> The majority of the houses (~ 2/3) contain 2 bathrooms. One bathroom was second most common. Having 3 bathrooms was only present in about 15% of homes and having 1.5, 2.5, 3.5, 4, 4.5 or 5 bathrooms was very rare. 
+
+> Almost all of the homes were classifed as `Residential` with extremely few homes being classifed as `Condo` or `Multi-family`. 
+
+
+```{r echo=FALSE}
 # get the categorical variables 
-plots <- list()
 cat_vars <- df %>% 
       select(-sqft, -latitude, -longitude)
-for (variable in cat_vars) {
-      freq <- as_tibble(as.data.frame(table(variable)))
-      
-      
+```
+
+```{r echo=FALSE}
+# make a list of frequency tables 
+tables <- list()
+for (i in 1:length(cat_vars)) {
+      freq_table <- as_tibble(as.data.frame(table(cat_vars[[i]])))
+      col_name <- colnames(cat_vars)[i]
+      tables[[col_name]] <- freq_table
 }
-# make a frequency table for houses in each city
-
-```
-```{r}
-freq <- as_tibble(as.data.frame(table(df$baths)))
-colnames(freq) <- c("Baths", "Frequency")
 
 ```
 
 
-```{r}
-make_ordered_barplot <- function(data, x, y){
+```{r echo=FALSE}
+plots <- list()
+# plot the frequency tables of beds, baths & type 
+for (i in 3:length(tables)) {
+   table <- tables[[i]]
+   p <- table %>% 
+      ggplot(aes(x = reorder(Var1, -Freq), y = Freq, color = Var1)) + 
+      geom_col() + 
+      labs(title = paste("Distribution of", names(tables)[i]),
+           x = names(tables)[i],
+           y = "Frequency") + 
+      theme_grey() + 
+      theme(legend.position = "none")
+   plots[[names(tables)[i]]] <- p
+}
+
+# display the plots 
+wrap_plots(plots, nrow = 3)
+```
+
+## Distribution of House Size
+```{r echo=FALSE}
+# make tibble of range of house size 
+house_size_range <- tibble(`Smallest House Size` = range(df$sqft)[1],
+                           `Largest House Size` = range(df$sqft)[2])
+kable(house_size_range, caption = "Range of House Square Footage")
+```
+
+> The distribution of house size is pulled to the right with outliers of large house size. The homes range in size from 484 sq ft on the low end to 4878 sq ft on the high end. The peak of the density centers around ~ 1266 sq ft. 
+
+```{r continuous vars, echo=FALSE}
+
+# get the peak house size
+peak_house_size <- density(df$sqft)$x[119]
+
+# make a density plot of the house square footage
+df %>% 
+   ggplot(aes(x = sqft)) + 
+   geom_density(color = "turquoise") + 
+   labs(title = "Distribution of House Size",
+        x = "Square Footage",
+        y = "Density") + 
+   theme_grey() + 
+   geom_vline(xintercept = peak_house_size) +
+   annotate(geom = "text", 
+            x = 1800, 
+            y = 1.5e-04, 
+            label = paste("Peak House Size\n", 
+                          round(peak_house_size,1), "sqft"))
+```
+
+> As expected, with a rising number of bedrooms, the bulk of the distribution for house size also rises but there is variability within different levels of bedrooms. After one-bedrooms there is a wide range of sizes for homes with 2 bedrooms and beyond. However, as the number of bedrooms rises, the density becomes thinner and thinner as fewer and fewer homes are have 4 or more bedrooms. 
+
+```{r echo=FALSE}
+df %>% 
+   ggplot(aes(x = as.factor(beds), y = sqft, color = as.factor(beds))) +
+   geom_violin() +
+   theme_grey() + 
+   theme(legend.position = "none") + 
+   labs(title = "Distribution of square footage by number of bedrooms", 
+        x = "Number of Bedrooms",
+        y = "House Size (sqft)") 
+```
+
+> Like with number of bedrooms, the house size increases with the number of bathrooms present but there still is considerable variability. Houses with 1.5 bathrooms have a very small range of house sizes. The density of the distributions becomes very thin as the number of bathrooms increases. Something potentially to consider is since there is considerable variability and overlap in size for houses with different bathrooms the question becomes if number of bathrooms will be a good predictor. On the extreme ends of bath number, the distributions of size are different enough and do not overlap.
+
+```{r echo=FALSE}
+df %>% 
+   ggplot(aes(x = as.factor(baths), y = sqft, color = as.factor(baths))) +
+   geom_violin() + 
+   theme_grey() + 
+   theme(legend.position = "none") + 
+   labs(title = "Distribution of square footage by number of bathrooms", 
+        x = "Number of Bathrooms",
+        y = "House Size (sqft)")
+
+```
+
+# Conclusions
+### Potential Problems with the Data 
+> 
+
+### Is the data appropriate to the question 
+
+### Sketch out the answer
+
+# References
+
+```{r echo=FALSE}
+
+#' Make an ordered bar plot from a frequency table. 
+#'
+#' @param data 
+#' @param x 
+#' @param y 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+make_ordered_barplot <- function(data){
       data %>% 
-            ggplot(aes(x = reorder({{x}}, -{{y}}), y = {{y}})) + 
+            ggplot(aes(x = reorder(data[[1]], -data[[2]]), y = data[[2]])) + 
             geom_col() + 
             coord_flip()
 }
 ```
 
 
-```{r}
-make_ordered_barplot(freq, Baths, Frequency)
-```
 
 
