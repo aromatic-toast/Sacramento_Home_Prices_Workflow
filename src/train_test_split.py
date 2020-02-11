@@ -46,6 +46,10 @@ def main(file_path):
       X_train.to_csv('data/X_train.csv', index=False)
       X_valid.to_csv('data/X_valid.csv', index=False)
       X_test.to_csv('data/X_test.csv', index=False)
+      
+      y_train.to_csv('data/y_train.csv', index=False)
+      y_valid.to_csv('data/y_valid.csv', index=False)
+      y_test.to_csv('data/y_test.csv', index=False)
 
       
 # call the main function 

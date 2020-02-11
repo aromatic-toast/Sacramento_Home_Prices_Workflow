@@ -13,24 +13,26 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = here::here())
 ```
 
-```{r load libraries}
+```{r load libraries, echo=FALSE}
 # load packages
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(mice))
+suppressPackageStartupMessages(library(ggcorrplot))
 library(knitr)
 library(patchwork)
-library(formatR)
 ```
 
 
-```{r load data, tidy=TRUE}
+```{r load data, tidy=TRUE, echo=FALSE, include=FALSE}
 # load training  data 
 df <- read_csv("data/X_train.csv")
+#df_y <- read_csv("data/y_train.csv")
 ```
 
 # Data Description 
 [Data Source](https://support.spatialkey.com/spatialkey-sample-csv-data)
 
-> This dataset contains information on various attributes of homes sold in and around the Sacramento, California area. The data is from real estate transactions taking place over a 5 day period. The data is from the website for the `SpatialKey` software and can be found [here](https://support.spatialkey.com/spatialkey-sample-csv-data)
+> This dataset contains information on various attributes of homes sold in and around the Sacramento, California. The data is from real estate transactions taking place over a 5 day period. The data is from the website for the `SpatialKey` software and can be loaded using the R caret package [@caret] or downloaded as a `csv` from [here](https://support.spatialkey.com/spatialkey-sample-csv-data). 
 
 ```{r echo=FALSE}
 num_examples <- nrow(df)
@@ -38,6 +40,15 @@ num_features <- ncol(df)
 print(paste("The number of training examples is:", num_examples))
 print(paste("The number of predictors is:", num_features))
 ```
+
+## Missing Data
+> The graphic below shows that all 521 rows of the dataset are complete. 
+
+```{r echo=FALSE}
+md.pattern(df, plot = FALSE)
+```
+
+
 
 ## Summary of Predictors 
 |Predictor | Type | Description |
@@ -61,9 +72,20 @@ print(paste("The number of predictors is:", num_features))
 
 
 ```{r echo=FALSE}
+# convert zipcodes to numeric vector  by removing z char
+# remove z character from zip codes 
+df <- df %>% 
+   mutate(
+   zip = as.numeric(gsub(pattern = "z", replacement = "", x = df$zip))
+)
+
 # get the categorical variables 
 cat_vars <- df %>% 
       select(-sqft, -latitude, -longitude)
+
+# get the numeric variables 
+numeric_vars <- df %>% 
+   select(-city, -type)
 ```
 
 ```{r echo=FALSE}
@@ -129,7 +151,7 @@ df %>%
                           round(peak_house_size,1), "sqft"))
 ```
 
-> As expected, with a rising number of bedrooms, the bulk of the distribution for house size also rises but there is variability within different levels of bedrooms. After one-bedrooms there is a wide range of sizes for homes with 2 bedrooms and beyond. However, as the number of bedrooms rises, the density becomes thinner and thinner as fewer and fewer homes are have 4 or more bedrooms. 
+> As expected, with a rising number of bedrooms, the bulk of the distribution for house size also rises but there is variability within different levels of bedrooms. After one-bedrooms, there is a wide range of sizes for homes with 2 bedrooms and beyond. However, as the number of bedrooms rises, the density becomes thinner and thinner as fewer and fewer homes are have 4 or more bedrooms. 
 
 ```{r echo=FALSE}
 df %>% 
@@ -156,36 +178,46 @@ df %>%
 
 ```
 
-# Conclusions
-### Potential Problems with the Data 
-> 
+# Correlation Matrix 
+>
 
-### Is the data appropriate to the question 
-
-### Sketch out the answer
-
-# References
-
-```{r echo=FALSE}
-
-#' Make an ordered bar plot from a frequency table. 
-#'
-#' @param data 
-#' @param x 
-#' @param y 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-make_ordered_barplot <- function(data){
-      data %>% 
-            ggplot(aes(x = reorder(data[[1]], -data[[2]]), y = data[[2]])) + 
-            geom_col() + 
-            coord_flip()
-}
+```{r correlation matrix, echo=FALSE}
+corr <- cor(numeric_vars)
+ggcorrplot(corr, 
+           method = "square",
+           type = "lower", 
+           outline.col = "white",
+           ggtheme = "theme_grey",
+           lab = TRUE,
+           colors = c("green", "white", "magenta"),
+           title = "Correlation Matrix of all numeric predictors") 
 ```
 
 
+
+# Conclusions
+### Potential Problems with the data 
+> After conducting this visual exploration, there doesn't seem to be any problems to report. The dataset is complete and the variables have reasonable distributions (i.e. nothing is terribly skewed)
+
+### Is the data appropriate to the question 
+> The research question for this project will be about discovering the relation between house price and the predictors. How will changing the values of the predictors influence the house price? Are there predictors that affect the house price more than others? This dataset provides some basic attributes about a house that should prove to be useful in inferring house price (i.e. housing type, bed and bath number etc.)
+
+### Research question formulation 
+> The primary inferential research question for this probject will be`
+
+- How are the predictors related to the response? (linear? polynomial? etc)
+
+> Related questions will include:
+
+- Which of the predictors are most strongly associated with the response of house price?
+
+- If the bed and bathroom number or house size increase, how does this affect the house price?
+
+#### Analysis Packages
+The tools for this exploratory analysis include the R language [@R], and the following R packages: tidyverse [@tidyverse], mice [@mice], knitr [@knitr], here [@here], ggcorrplot [@ggcorrplot] and patchwork [@patchwork].
+
+This analysis uses the `Sacramento` dataset obtained through the R caret package [@caret].
+
+# References
 
 
