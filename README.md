@@ -3,7 +3,7 @@ A project to practice data science workflow concepts using Sacramento, CA home p
 - Author: Lesley Miller
 
 # Exploratory Data Analysis 
-The data description and exploration report can be found [here](https://github.com/aromatic-toast/Sacramento_Home_Prices_Workflow/blob/master/doc/eda.md).
+The data description and exploration report can be found [here](https://aromatic-toast.github.io/Sacramento_Home_Prices_Workflow/doc/eda.html).
 
 # Sacramento Home Prices Project Proposal
 
