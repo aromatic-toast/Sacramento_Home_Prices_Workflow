@@ -3,13 +3,14 @@ title: "EDA of Sacramento House Prices"
 author: "Lesley Miller"
 date: "2/8/2020"
 output: 
-   github_document:
+   html_document:
       toc: true
+always_allow_html: yes
 bibliography: citations.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_knit$set(root.dir = here::here())
 ```
 
@@ -20,13 +21,17 @@ suppressPackageStartupMessages(library(mice))
 suppressPackageStartupMessages(library(ggcorrplot))
 library(knitr)
 library(patchwork)
+suppressPackageStartupMessages(library(plotly))
 ```
 
 
 ```{r load data, tidy=TRUE, echo=FALSE, include=FALSE}
 # load training  data 
 df <- read_csv("data/X_train.csv")
-#df_y <- read_csv("data/y_train.csv")
+df_y <- read_csv("data/y_train.csv", col_names  = c("price"))
+
+# combine the predictors with the response, price
+combined_df <- as_tibble(cbind(df, df_y))
 ```
 
 # Data Description 
@@ -100,7 +105,7 @@ for (i in 1:length(cat_vars)) {
 ```
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.cap="Figure 1"}
 plots <- list()
 # plot the frequency tables of beds, baths & type 
 for (i in 3:length(tables)) {
@@ -128,9 +133,9 @@ house_size_range <- tibble(`Smallest House Size` = range(df$sqft)[1],
 kable(house_size_range, caption = "Range of House Square Footage")
 ```
 
-> The distribution of house size is pulled to the right with outliers of large house size. The homes range in size from 484 sq ft on the low end to 4878 sq ft on the high end. The peak of the density centers around ~ 1266 sq ft. 
+> **House Size** The distribution of house size is pulled to the right with outliers of large house size. The homes range in size from 484 sq ft on the low end to 4878 sq ft on the high end. The peak of the density centers around ~ 1266 sq ft. 
 
-```{r continuous vars, echo=FALSE}
+```{r continuous vars, echo=FALSE, fig.cap="Figure 2"}
 
 # get the peak house size
 peak_house_size <- density(df$sqft)$x[119]
@@ -151,9 +156,9 @@ df %>%
                           round(peak_house_size,1), "sqft"))
 ```
 
-> As expected, with a rising number of bedrooms, the bulk of the distribution for house size also rises but there is variability within different levels of bedrooms. After one-bedrooms, there is a wide range of sizes for homes with 2 bedrooms and beyond. However, as the number of bedrooms rises, the density becomes thinner and thinner as fewer and fewer homes are have 4 or more bedrooms. 
+> **Number of Bedrooms** As expected, with a rising number of bedrooms, the bulk of the distribution for house size also rises but there is variability within different levels of bedrooms. After one-bedrooms, there is a wide range of sizes for homes with 2 bedrooms and beyond. However, as the number of bedrooms rises, the density becomes thinner and thinner as fewer and fewer homes are have 4 or more bedrooms. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.cap="Figure 3"}
 df %>% 
    ggplot(aes(x = as.factor(beds), y = sqft, color = as.factor(beds))) +
    geom_violin() +
@@ -164,9 +169,9 @@ df %>%
         y = "House Size (sqft)") 
 ```
 
-> Like with number of bedrooms, the house size increases with the number of bathrooms present but there still is considerable variability. Houses with 1.5 bathrooms have a very small range of house sizes. The density of the distributions becomes very thin as the number of bathrooms increases. Something potentially to consider is since there is considerable variability and overlap in size for houses with different bathrooms the question becomes if number of bathrooms will be a good predictor. On the extreme ends of bath number, the distributions of size are different enough and do not overlap.
+> **Number of Bathrooms** Like with number of bedrooms, the house size increases with the number of bathrooms present but there still is considerable variability. Houses with 1.5 bathrooms have a very small range of house sizes. The density of the distributions becomes very thin as the number of bathrooms increases. Something potentially to consider is since there is considerable variability and overlap in size for houses with different bathrooms the question becomes if number of bathrooms will be a good predictor. On the extreme ends of bath number, the distributions of size are different enough and do not overlap.
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.cap="Figure 4"}
 df %>% 
    ggplot(aes(x = as.factor(baths), y = sqft, color = as.factor(baths))) +
    geom_violin() + 
@@ -179,9 +184,9 @@ df %>%
 ```
 
 # Correlation Matrix 
->
+> The largest correlations are between the number of bedrooms and square footage and the number of bathrooms and square footage. This is expected but this may indicate that the numbers of bathrooms and bedrooms are redundant information and just modelling using house size may obtain a better model. This will have tobe assessed during the modelling process. The number of beds and bathrooms also have a modest positive correlation of 0.66. The strongest negative correlation is betwen the zip code and the longitude. The rest of the predictors are not highly correlated with each other. 
 
-```{r correlation matrix, echo=FALSE}
+```{r correlation matrix, echo=FALSE, fig.cap="Figure 5"}
 corr <- cor(numeric_vars)
 ggcorrplot(corr, 
            method = "square",
@@ -190,19 +195,108 @@ ggcorrplot(corr,
            ggtheme = "theme_grey",
            lab = TRUE,
            colors = c("green", "white", "magenta"),
-           title = "Correlation Matrix of all numeric predictors") 
+           title = "Correlation atrix of ll Numeric redictors") 
+```
+
+# Relationship Between House Price and House Attributes 
+> The following set of visuals describe the relationships between house prices and the attributes of that house like size, number bedrooms and bathrooms etc. These visuals should provide clues as to which variables will be the most useful in a model that attempts to infer house price. 
+
+> **House Price vs House Size**
+The scatterplot below shows a primarily linear relationship between house price and house size with a few notable outliers. This plot indicates that a linear model may be appropriate here. 
+
+```{r price vs sqft, fig.cap="Figure 6"}
+combined_df %>% 
+   ggplot(aes(x = sqft, y = price)) +
+   geom_point(aes(color = sqft, alpha = 0.5)) +
+   labs(title = "Relationship Between Price and House Size",
+        x = "House Size (sqft log2 scale)", 
+        y = "House Price (log2 scale)") +
+   scale_x_continuous(trans = "log2") + 
+   scale_y_continuous(trans = "log2")
+```
+
+> **House Price vs Number of Bedrooms**
+As expected, on average the house price rises as the number of bedrooms increases however, within each level of bedrooms, there  can be quite a bit of variability and overlap between levels. For example, the price for houses with 3 and 4 bedrooms varies between less than $60k on the low end and greater than $500k on the high end. Two and five bedroom homes also overlalp with these distributions but have a smaller range. On the extreme ends for number of bedrooms, there is sepration in the distributions but this variable may not strongly differentiate price for the middle levels of bedrooms (2, 3 and 4 bedrooms). 
+
+```{r price vs beds, fig.cap="Figure 7"}
+combined_df %>% 
+   ggplot(aes(x = as.factor(beds), y = price, color = beds)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Number of Bedrooms",
+        x = "Number of Bedrooms", 
+        y = "House Price (log2 scale)") + 
+   scale_y_continuous(trans = "log2")
+```
+
+> **House Price vs Number of Bathrooms**
+House price seems to have less variability when considering a certain number of bathrooms compared to  when considering number bedrooms as above. Houses with 2 bathrooms have the biggest range in price. Overall the trend is an increasing price with increasing number of bathrooms. However, like with number of bedrooms, some of the levels overlap indicating that perhaps this may not be the best variable for inferring price reliably. 
+
+
+```{r price vs baths, fig.cap="Figure 8"}
+combined_df %>% 
+   ggplot(aes(x = as.factor(baths), y = price, color = baths)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Number of Bathrooms",
+        x = "Number of Bathrooms", 
+        y = "House Price (log2 scale)") +
+    scale_y_continuous(trans = "log2")
+```
+
+> **Hous Price vs Housing Type**
+Overall, there is no trend with the price and the housing type. The peak price of each distribution is somewhat similar, give or take a few thousand dollars. The residential homes have the largest skewness in price. The lack of trend with housing type indicates this may not be the explanatory variable. 
+
+```{r price vs house type, fig.cap="Figure 9"}
+combined_df %>% 
+   ggplot(aes(x = type, y = price, color = type)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Housing Types",
+        x = "House Type", 
+        y = "House Price") +
+   theme(legend.position = "none")
+```
+
+> **House Price vs City**
+The plot below shows the price distribution in the cities that contained records for 16 or more houses. On average, different cities will have different house prices. But that averages between cities do not seem to deviate from each other significantly.
+
+```{r price vs city, fig.cap="Figure 10"}
+# get the cities that have 10 houses or more
+top_cities <- as.data.frame(sort(table(combined_df$city))) %>% 
+   as_tibble() %>% 
+   filter(Freq >= 16)
+
+combined_df %>% 
+   filter(city %in% top_cities$Var1) %>% 
+   ggplot(aes(x = city, y = price, color = city)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Cities",
+        x = "City Location", 
+        y = "House Price (log2 scale)") + 
+    scale_y_continuous(trans = "log2") + 
+   theme(legend.position = "none") + 
+   coord_flip()
+```
+
+> **House Price vs Geospatial Location**The 3D plot below attempts to explore house location and price. The 3D nature of the plot makes the spatial distribution of house price more apparent. There is clearly a spatial gradient for the house price with higher latitudes and longitudes leading to higher prices. The geospatial coordinates may be useful when in a linear model. 
+
+```{r 3d spatial, fig.cap="Figure 11"}
+plot_ly(data = combined_df,  
+        x = ~latitude, 
+        y = ~longitude, 
+        z = ~price, 
+        type = "scatter3d", 
+        color = ~price,
+        mode = "markers")
 ```
 
 
-
 # Conclusions
-### Potential Problems with the data 
-> After conducting this visual exploration, there doesn't seem to be any problems to report. The dataset is complete and the variables have reasonable distributions (i.e. nothing is terribly skewed)
+### Are there potential problems with the data? 
+> After conducting this visual exploration, there doesn't seem to be any problems warranting major concern. The dataset is complete and the variables have reasonable distributions (i.e. nothing is terribly skewed)
 
-### Is the data appropriate to the question 
-> The research question for this project will be about discovering the relation between house price and the predictors. How will changing the values of the predictors influence the house price? Are there predictors that affect the house price more than others? This dataset provides some basic attributes about a house that should prove to be useful in inferring house price (i.e. housing type, bed and bath number etc.)
+### Is the data appropriate to the question?
+> The research question for this project will be about discovering the relation between house price and the predictors. How will changing the values of the predictors influence the house price? Are there predictors that affect the house price more than others? This dataset provides some basic attributes about a house that should prove to be useful in inferring house price. Based on the visual analysis, the most influential predictors are likely square footage and geo coordinates and potentially the number of bed and bathrooms. 
 
-### Research question formulation 
+### Research Question Formulation 
 > The primary inferential research question for this probject will be`
 
 - How are the predictors related to the response? (linear? polynomial? etc)
@@ -214,7 +308,7 @@ ggcorrplot(corr,
 - If the bed and bathroom number or house size increase, how does this affect the house price?
 
 #### Analysis Packages
-The tools for this exploratory analysis include the R language [@R], and the following R packages: tidyverse [@tidyverse], mice [@mice], knitr [@knitr], here [@here], ggcorrplot [@ggcorrplot] and patchwork [@patchwork].
+The tools for this exploratory analysis include the R language [@R], and the following R packages: tidyverse [@tidyverse], mice [@mice], knitr [@knitr], here [@here], ggcorrplot [@ggcorrplot], patchwork [@patchwork] and plotly [@plotly].
 
 This analysis uses the `Sacramento` dataset obtained through the R caret package [@caret].
 

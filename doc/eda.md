@@ -10,6 +10,8 @@ Lesley Miller
         Predictors](#distribution-of-categorical-predictors)
       - [Distribution of House Size](#distribution-of-house-size)
   - [Correlation Matrix](#correlation-matrix)
+  - [Relationship Between House Price and House
+    Attributes](#relationship-between-house-price-and-house-attributes)
   - [Conclusions](#conclusions)
       - [Potential Problems with the
         data](#potential-problems-with-the-data)
@@ -119,6 +121,94 @@ Range of House Square Footage
 > 
 
 ![](eda_files/figure-gfm/correlation%20matrix-1.png)<!-- -->
+
+# Relationship Between House Price and House Attributes
+
+``` r
+combined_df %>% 
+   ggplot(aes(x = sqft, y = price)) +
+   geom_point(aes(color = sqft, alpha = 0.5)) + 
+   labs(title = "Relationship Between Price and House Size",
+        x = "House Size (sqft)", 
+        y = "House Price")
+```
+
+![](eda_files/figure-gfm/price%20vs%20sqft-1.png)<!-- -->
+
+``` r
+combined_df %>% 
+   ggplot(aes(x = as.factor(beds), y = price, color = beds)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Number of Bedrooms",
+        x = "Number of Bedrooms", 
+        y = "House Price")
+```
+
+![](eda_files/figure-gfm/price%20vs%20beds-1.png)<!-- -->
+
+``` r
+combined_df %>% 
+   ggplot(aes(x = as.factor(baths), y = price, color = baths)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Number of Bathrooms",
+        x = "Number of Bathrooms", 
+        y = "House Price")
+```
+
+![](eda_files/figure-gfm/price%20vs%20baths-1.png)<!-- -->
+
+``` r
+combined_df %>% 
+   ggplot(aes(x = type, y = price, color = type)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Housing Types",
+        x = "House Type", 
+        y = "House Price")
+```
+
+![](eda_files/figure-gfm/price%20vs%20house%20type-1.png)<!-- -->
+
+``` r
+# get the cities that have 10 houses or more
+top_cities <- as.data.frame(sort(table(combined_df$city))) %>% 
+   as_tibble() %>% 
+   filter(Freq >= 16)
+
+combined_df %>% 
+   filter(city %in% top_cities$Var1) %>% 
+   ggplot(aes(x = city, y = price, color = city)) + 
+   geom_violin() + 
+   labs(title = "Distribution of Price for Different Cities",
+        x = "City Location", 
+        y = "House Price") + 
+   theme(legend.position = "none") + 
+   coord_flip()
+```
+
+![](eda_files/figure-gfm/price%20vs%20city-1.png)<!-- -->
+
+``` r
+combined_df %>% 
+   ggplot(aes(x = latitude, y = longitude, color = price)) + 
+   geom_point(alpha = 0.6) +
+   labs(title = "Relationship between spatial coordinates and house price",
+        x = "Latitude",
+        y = "Longitude")
+```
+
+![](eda_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+plot_ly(data = combined_df,  
+        x = ~latitude, 
+        y = ~longitude, 
+        z = ~price, 
+        type = "scatter3d", 
+        color = ~price,
+        mode = "markers")
+```
+
+![](eda_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 # Conclusions
 
