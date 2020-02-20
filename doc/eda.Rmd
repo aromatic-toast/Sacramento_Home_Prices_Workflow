@@ -195,7 +195,7 @@ ggcorrplot(corr,
            ggtheme = "theme_grey",
            lab = TRUE,
            colors = c("green", "white", "magenta"),
-           title = "Correlation atrix of ll Numeric redictors") 
+           title = "Correlation matrix of all Numeric predictors") 
 ```
 
 # Relationship Between House Price and House Attributes 

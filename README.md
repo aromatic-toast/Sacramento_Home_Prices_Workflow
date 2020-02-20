@@ -14,7 +14,7 @@ The main objective of this project is to build a model to explain the relation b
 The data comes from the Sacramento dataset found in the R `caret` package and can be loaded through the `caret` package or obtained directly form the `SpatialKey` website [here](https://support.spatialkey.com/spatialkey-sample-csv-data)
 
 # Analysis Plan 
-The analysis plan includes the initial building of a simple linear model of house price using square footage. This model will then be expanded to a multiple regression to include additional predictors such as city, geo coordinates, number of bedrooms and bathrooms. Any model with additional predictors should provide enough explanatory power to counteract the additinal model complexity. This will be assessed by testing the nested models with the Ftest. 
+The analysis plan includes the initial building of a simple linear model of house price using square footage. This model will then be expanded to a multiple regression to include additional predictors such as city, geo coordinates, number of bedrooms and bathrooms. Any model with additional predictors should provide enough explanatory power to counteract the additional model complexity. This will be assessed by testing the nested models with the Ftest. 
 
 # Planned Analysis Results
 The final model will be displayed as a line on top of the dataset. The results will also include a table of the relevant test stastics and associated p-values. 
