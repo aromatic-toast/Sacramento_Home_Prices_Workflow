@@ -18,3 +18,26 @@ The analysis plan includes the initial building of a simple linear model of hous
 
 # Planned Analysis Results
 The final model will be displayed as a line on top of the dataset. The results will also include a table of the relevant test stastics and associated p-values. 
+
+# Dependencies 
+- R and R packages:
+      - tidyverse
+      - docopt
+      - broom
+      - knitr
+      
+# Instructions to run analysis scripts in order: 
+1. Clone this repo
+2. Open RStudio
+3. Open an new R project using the Rproj in the project root directory
+4. Run the following commands in order:
+```
+src/load_and_write_csv.R --input_url=http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv
+src/eda.R --input_path=data/sacramento_house_prices.csv --output_path=results/
+src/modelling.R --input_path=data/sacramento_house_prices.csv --output_plot=results/ --output_table=results/test_stats_table.csv
+```
+5. To render the final report based on the analysis: 
+      - Go to results directory and open `final_report.Rmd`
+      - Click the `Knit` button
+
+
