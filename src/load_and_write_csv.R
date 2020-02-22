@@ -14,11 +14,12 @@ Options:
 
 # import packages
 suppressPackageStartupMessages(library(tidyverse))
+library(docopt)
 
 opt <- docopt(doc)
 
 # define main function 
-main <- function(){
+main <- function(input_url, output_path) {
       # load the data from caret
       df <- read_delim(file = input_url,
                        delim = ",")
@@ -28,8 +29,8 @@ main <- function(){
       write_csv(x = df, path = output_path)
 }
 
-# call main function 
-main()
+# call main function
+main(opt$input_url, opt$output_path)
 
 
 
