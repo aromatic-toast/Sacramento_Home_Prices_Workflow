@@ -2,14 +2,15 @@
 # date: 2020/02/20
 # 
 
-'''This script has a description here!
+" This script builds a simple linear regression model and prodces a plot of the model along with a table of the model test statistics. 
 
-Usage: src/modelling.R --input_path=<input_path> --output_path=<output_path>
+Usage: src/modelling.R --input_path=<input_path> --output_plot=<output_plot> --output_table=<output_table>
 
 Options:
 --input_path=<file_path> Path (the path including file name) to the input csv file.
---output_path=<output_path> Path to the output directory where modelling results should go.
-''' -> doc
+--output_plot=<output_plot> Path to model result plot.
+--output_table=<output_table> Path to test statistics results table.
+" -> doc
 
 # import packages 
 suppressPackageStartupMessages(library(tidyverse))
@@ -19,22 +20,19 @@ library(broom)
 opt <- docopt(doc)
 
 # define main function 
-main <- function(input_path, output_path){
+main <- function(input_path, output_plot, output_table) {
       # read in the data 
-      X_train <- read_csv("data/X_train.csv")
-      y_train <- read_csv("data/y_train.csv", col_names  = c("price"))
-      X_valid <- read_csv("data/X_valid.csv")
-      y_valid <- read_csv("data/y_valid.csv", col_names  = c("price"))
-      
-      # combine the target column with rest of predictors 
-      X_train_combined <- as_tibble(cbind(X_train, y_train))
+      df <- read_csv(input_path)
+   
       
       # build a simple lm model 
-      model1 <- lm(price ~ sqft, data = X_train_combined)
-      tidy(model1)
+      model <- lm(price ~ sqft, data = df)
+      
+      # save the test stats of the model 
+      write_csv(tidy(model), path = output_table)
       
       # visualize the simple linear regression (SLR)
-      X_train_combined %>% 
+      plot <- df %>% 
             ggplot(aes(x = sqft, y = price)) +
             geom_point() + 
             geom_smooth(method = 'lm') + 
@@ -42,11 +40,9 @@ main <- function(input_path, output_path){
                  x = "Square Footage",
                  y = " House Price")
       
-      # build a multiple regression 
-      model2 <- lm(price ~ sqft * as.factor(beds), data = X_train_combined)
-      tidy(model2)
+      ggsave(filename = "SLR_plot.png", plot = plot, path = output_plot)
       
 }
 
 # call main function 
-main(opt$input_path, opt$output_path)
+main(opt$input_path, opt$output_plot, opt$output_table)
