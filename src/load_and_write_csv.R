@@ -1,25 +1,31 @@
 # author: Lesley Miller 
 # Date: 2020/05/08
 #
-# loads data and writes it to csv in the data directory
 
-# usage: Rscript src/load_and_write_csv.R
+
+"Pulls from provided url and writes it to csv in the data directory.
+
+Usage: src/load_and_write_csv.R --input_url=<input_url> --output_path=<output_path>
+
+Options:
+--input_url=<input_url> The url to the data. 
+--output_path=<output_path> The file path including file name for where the data should go. 
+" -> doc
 
 # import packages
 suppressPackageStartupMessages(library(tidyverse))
-library(caret)
+
+opt <- docopt(doc)
 
 # define main function 
 main <- function(){
       # load the data from caret
-      data("Sacramento")
-      
-      # convert to a tibble 
-      df <- as_tibble(Sacramento)
+      df <- read_delim(file = input_url,
+                       delim = ",")
       
       
       # write the sacramento data to csv
-      write_csv(x = df, path = "data/sacramento_house_prices.csv")
+      write_csv(x = df, path = output_path)
 }
 
 # call main function 
