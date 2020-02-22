@@ -5,6 +5,9 @@ A project to practice data science workflow concepts using Sacramento, CA home p
 # Exploratory Data Analysis 
 The data description and exploration report can be found [here](https://aromatic-toast.github.io/Sacramento_Home_Prices_Workflow/doc/eda.html).
 
+# Final Report
+The final report can be found [here](https://aromatic-toast.github.io/Sacramento_Home_Prices_Workflow/results/final_report.html)
+
 # Sacramento Home Prices Project Proposal
 
 # Research Question 
