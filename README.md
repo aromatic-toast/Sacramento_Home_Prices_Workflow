@@ -21,6 +21,7 @@ The final model will be displayed as a line on top of the dataset. The results w
 
 # Dependencies 
 - R and R packages
+
       - tidyverse
       - docopt
       - broom
