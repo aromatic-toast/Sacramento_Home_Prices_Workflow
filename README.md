@@ -20,7 +20,7 @@ The analysis plan includes the initial building of a simple linear model of hous
 The final model will be displayed as a line on top of the dataset. The results will also include a table of the relevant test stastics and associated p-values. 
 
 # Dependencies 
-- R and R packages:
+- R and R packages
       - tidyverse
       - docopt
       - broom
