@@ -7,7 +7,7 @@ Usage: src/eda.R --input_path=<input_path> --output_path=<output_path>
 
 Options:
 --input_path=<input_path> Path to the input data.
---output_path=<output_path> Pth to the directory where output figures will go.
+--output_path=<output_path> Path to the directory where output figures will go.
 " -> doc
 
 # import packages
@@ -20,6 +20,8 @@ opt <- docopt(doc)
 main <-  function(input_path, output_path) {
       # read in the data 
       df <- read_csv(input_path)
+      df <- df %>% 
+         rename(sqft =  sq__ft)
       
       # make tibble of range of house size 
       house_size_range <- tibble(`Smallest House Size` = range(df$sqft)[1],
@@ -53,7 +55,7 @@ main <-  function(input_path, output_path) {
             scale_y_continuous(trans = "log2")
       
       # save the eda results 
-      write_csv(house_size_range, path = "results/house_size_range.csv")
+      write_csv(house_size_range, path = paste(output_path, "house_size_range.csv"))
       ggsave(filename = "sqft_density.png", plot = density_plot, path = output_path)
       ggsave(filename = "sqft_vs_price.png", plot = scatterplot, path = output_path)
       

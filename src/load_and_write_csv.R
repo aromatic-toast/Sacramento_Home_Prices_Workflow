@@ -8,8 +8,8 @@
 Usage: src/load_and_write_csv.R --input_url=<input_url> --output_path=<output_path>
 
 Options:
---input_url=<input_url> The url to the data. 
---output_path=<output_path> The file path including file name for where the data should go. 
+--input_url=<input_url> The url to the data.
+--output_path=<output_path> The file path including file name for where the data should go.
 " -> doc
 
 # import packages
@@ -26,12 +26,11 @@ main <- function(input_url, output_path) {
       
       
       # write the sacramento data to csv
-      write_csv(x = df, path = output_path)
+      write_csv(x = df, path = paste(output_path, "sacramento_house_prices.csv", sep = ""))
 }
 
 # call main function
 main(opt$input_url, opt$output_path)
-
 
 
 

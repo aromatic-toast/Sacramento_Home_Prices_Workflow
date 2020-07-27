@@ -2,14 +2,13 @@
 # date: 2020/02/20
 # 
 
-" This script builds a simple linear regression model and prodces a plot of the model along with a table of the model test statistics. 
+"This script builds a simple linear regression model and prodces a plot of the model along with a table of the model test statistics.
 
-Usage: src/modelling.R --input_path=<input_path> --output_plot=<output_plot> --output_table=<output_table>
+Usage: src/modelling.R --input_path=<input_path> --output_dir=<output_dir>
 
 Options:
 --input_path=<file_path> Path (the path including file name) to the input csv file.
---output_plot=<output_plot> Path to model result plot.
---output_table=<output_table> Path to test statistics results table.
+--output_dir=<output_dir> Output directory for model result plot and test stats table.
 " -> doc
 
 # import packages 
@@ -20,16 +19,16 @@ library(broom)
 opt <- docopt(doc)
 
 # define main function 
-main <- function(input_path, output_plot, output_table) {
+main <- function(input_path, output_dir) {
       # read in the data 
       df <- read_csv(input_path)
+      
+      df <- df %>% 
+         rename(sqft =  sq__ft)
    
       
       # build a simple lm model 
       model <- lm(price ~ sqft, data = df)
-      
-      # save the test stats of the model 
-      write_csv(tidy(model), path = output_table)
       
       # visualize the simple linear regression (SLR)
       plot <- df %>% 
@@ -39,10 +38,13 @@ main <- function(input_path, output_plot, output_table) {
             labs(title = "Simple Linear Regression of Price with House Square Footage",
                  x = "Square Footage",
                  y = " House Price")
+      # save the test stats of the model 
+      write_csv(tidy(model), path = paste(output_dir, "test_stats_table.csv"))
       
-      ggsave(filename = "SLR_plot.png", plot = plot, path = output_plot)
+      # save the lm model plot 
+      ggsave(filename = "SLR_plot.png", plot = plot, path = output_dir)
       
 }
 
 # call main function 
-main(opt$input_path, opt$output_plot, opt$output_table)
+main(opt$input_path, opt$output_dir)

@@ -10,7 +10,7 @@
 train_test_split to obtain train, validation and test sets. It then 
 writes those datasets to csv.
 
-Usage: src/train_test_split.py --file_path=<file_path> 
+Usage: src/train_test_split.py --file_path=<file_path> --output_dir=<output_dir>
 
 Options:
 --file_path=<file_path> Path (the path including file name) to the csv file.
@@ -25,7 +25,7 @@ opt = docopt(__doc__)
 
 
 # define main function 
-def main(file_path):
+def main(file_path, output_dir):
       
       # read in the data 
       df = pd.read_csv(file_path)
@@ -43,18 +43,18 @@ def main(file_path):
       X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.20, random_state=42)
       
       # write train, validation and test sets to csv
-      X_train.to_csv('data/X_train.csv', index=False)
-      X_valid.to_csv('data/X_valid.csv', index=False)
-      X_test.to_csv('data/X_test.csv', index=False)
+      X_train.to_csv(output_dir + 'X_train.csv', index=False)
+      X_valid.to_csv(output_dir + 'X_valid.csv', index=False)
+      X_test.to_csv(output_dir + 'X_test.csv', index=False)
       
-      y_train.to_csv('data/y_train.csv', index=False)
-      y_valid.to_csv('data/y_valid.csv', index=False)
-      y_test.to_csv('data/y_test.csv', index=False)
+      y_train.to_csv(output_dir + 'y_train.csv', index=False)
+      y_valid.to_csv(output_dir + 'y_valid.csv', index=False)
+      y_test.to_csv(output_dir + 'y_test.csv', index=False)
 
       
 # call the main function 
 if __name__ == "__main__":
-   main(opt["--file_path"])
+   main(opt["--file_path"], opt["--output_dir"])
    
       
       
